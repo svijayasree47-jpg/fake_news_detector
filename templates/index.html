@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TruthScan - Fake News Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #38bdf8;
+            letter-spacing: -0.5px;
+        }
+        .logo span { color: #f1f5f9; }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .nav-links a:hover { color: #f1f5f9; }
+        .nav-badge {
+            background: #38bdf8;
+            color: #0f172a;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* HERO */
+        .hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: #1e3a5f;
+            color: #38bdf8;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid #1d4ed8;
+        }
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: #f1f5f9;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+        .hero h1 span { color: #38bdf8; }
+        .hero p {
+            font-size: 18px;
+            color: #94a3b8;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* MAIN CARD */
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 24px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        textarea {
+            width: 100%;
+            padding: 16px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: #f1f5f9;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            height: 160px;
+            resize: vertical;
+            outline: none;
+            transition: border 0.2s;
+        }
+        textarea:focus { border-color: #38bdf8; }
+        textarea::placeholder { color: #475569; }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 16px;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s;
+        }
+        .analyze-btn:hover { opacity: 0.9; }
+
+        /* RESULT */
+        .result-card {
+            border-radius: 20px;
+            padding: 36px;
+            text-align: center;
+            margin-bottom: 24px;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-real {
+            background: linear-gradient(135deg, #052e16, #14532d);
+            border: 1px solid #16a34a;
+        }
+        .result-fake {
+            background: linear-gradient(135deg, #2d0a0a, #7f1d1d);
+            border: 1px solid #dc2626;
+        }
+        .result-icon { font-size: 48px; margin-bottom: 12px; }
+        .result-label {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .result-real .result-label { color: #4ade80; }
+        .result-fake .result-label { color: #f87171; }
+        .result-confidence {
+            font-size: 15px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        /* CONFIDENCE BAR */
+        .bar-container {
+            background: #0f172a;
+            border-radius: 20px;
+            height: 10px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .bar-fill-real {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #16a34a, #4ade80);
+        }
+        .bar-fill-fake {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #dc2626, #f87171);
+        }
+
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* TIPS */
+        .tips {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 32px;
+        }
+        .tips h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 16px;
+        }
+        .tip-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+        .tip-icon {
+            font-size: 18px;
+            margin-top: 2px;
+        }
+        .tip-text {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: #475569;
+            font-size: 13px;
+            border-top: 1px solid #1e293b;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="logo">Truth<span>Scan</span></div>
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">How it works</a></li>
+            <li><a href="#">About</a></li>
+        </ul>
+        <span class="nav-badge">AI Powered</span>
+    </nav>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-badge">🔍 Powered by Machine Learning</div>
+        <h1>Detect <span>Fake News</span><br>Instantly</h1>
+        <p>Paste any headline or article and our AI will analyze it in seconds.</p>
+    </div>
+
+    <div class="container">
+
+        <!-- STATS -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">AI</div>
+                <div class="stat-label">Powered Analysis</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">Fast</div>
+                <div class="stat-label">Instant Results</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">Free</div>
+                <div class="stat-label">No Sign Up Needed</div>
+            </div>
+        </div>
+
+        <!-- RESULT -->
+        {% if prediction %}
+        <div class="result-card result-{{ prediction | lower }}">
+            {% if prediction == "REAL" %}
+            <div class="result-icon">✅</div>
+            <div class="result-label">REAL NEWS</div>
+            {% else %}
+            <div class="result-icon">❌</div>
+            <div class="result-label">FAKE NEWS</div>
+            {% endif %}
+            <div class="result-confidence">Confidence: {{ confidence }}%</div>
+            <div class="bar-container">
+                <div class="bar-fill-{{ prediction | lower }}" style="width: {{ confidence }}%"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- INPUT CARD -->
+        <div class="card">
+            <div class="card-title">📋 Paste News Here</div>
+            <form method="POST">
+                <textarea name="news" placeholder="Example: Scientists discover new treatment for cancer using nanotechnology...">{{ news_text }}</textarea>
+                <button type="submit" class="analyze-btn">🔍 Analyze Now</button>
+            </form>
+        </div>
+
+        <!-- TIPS -->
+        <div class="tips">
+            <h3>💡 Tips for best results</h3>
+            <div class="tip-item">
+                <span class="tip-icon">📰</span>
+                <span class="tip-text">Paste the full headline or first paragraph for better accuracy</span>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon">⚠️</span>
+                <span class="tip-text">Sensational claims like "secret", "hidden truth", "they don't want you to know" are common in fake news</span>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon">✅</span>
+                <span class="tip-text">Real news usually mentions specific sources, locations, and factual data</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        Built with Flask + Machine Learning &nbsp;|&nbsp; TruthScan 2025
+    </footer>
+
+</body>
+</html>
